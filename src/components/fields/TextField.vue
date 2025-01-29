@@ -29,7 +29,6 @@ const updateData = (event) => {
 </script>
 <style lang="css" scoped>
 input {
-    background: black;
     border-width: 1px;
     padding: 10px;
 }

@@ -1,12 +1,16 @@
 <template>  
     <div class="dynamic-form">
+
+        <SelectUnselectField @enable="manejarEvento"></SelectUnselectField>
         <form @submit.prevent="onSubmit" class="form-group">
             <div v-for="(field) in fieldDefinitions" :key="field.id" class="form-field">
                 <label>{{ field.label }}</label>
                 <component :is="getComponentName(field)" :field="field"
                     :modelValue="modelValue ? modelValue[field.id] : ''" 
                     @update="updateFormData"
-                    :ref="el => setFieldRef(field, el)" />
+                    :ref="el => setFieldRef(field, el)"
+                    :disabled="fieldsDisabled"
+                />
             </div>
             <div class="button-container">
                 <button type="submit" class="button primary">Guardar</button>
@@ -14,13 +18,14 @@
 
         </form>
         <label id="result-label">Result:</label><br/>
-        <textarea id="result" rows="10" cols="50" disabled></textarea>
+        <textarea id="result" :disabled="fieldsDisabled" rows="10" cols="50"></textarea>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, defineAsyncComponent, isProxy, toRaw, watch } from 'vue';
 import fieldMixin from './FieldMixin';
+import SelectUnselectField from './fields/SelectUnselectField.vue';
 const emit = defineEmits(['update', 'formSubmit']);
 const fieldRefs = {};
 
@@ -35,6 +40,7 @@ const props = defineProps({
     }
 });
 let { handleChange, valueFromEvent } = fieldMixin.setup(props, { emit });
+const fieldsDisabled = ref(false);
 
 let formData = toRaw(props.modelValue);
 
@@ -46,10 +52,16 @@ const setFieldRef = (field, ref) => {
     fieldRefs[field.id] = ref;
 }
 
+
+const manejarEvento = (estado) => {
+    fieldsDisabled.value = !fieldsDisabled.value;
+};
+
 const setSelected = (fieldId, value) => {
     let refs = fieldRefs;
     refs[fieldId].setSelected(value);
 }
+
 
 const updateFormData = (idAndValue) => {
     let { id, value } = { ...idAndValue };
